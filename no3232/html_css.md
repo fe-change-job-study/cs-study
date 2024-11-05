@@ -91,6 +91,99 @@
   - 리플로우에 대하여
   - 리페인트에 대하여
 
+## 🎈 HTML
+
+## DOCTYPE
+
+### `DOCTYPE에 대하여 설명하시오`
+
+브라우저가 문서를 렌더링할 때 어떤 종류의 문서인지를 설명해주는 것.
+
+HTML의 버전을 명시한다.
+
+### `meta 태그에 대해서 알고 있나요?`
+
+메타 태그는 웹페이지가 담고 있는 컨텐츠가 아닌 **웹페이지 자체의 정보**를 명시하기 위한 목적으로 사용되는 HTML 태그이다.
+
+`<meta>`요소를 통해서 마크업을 하며, HTML 문서 내에서 `<head>` 태그 사이에 위치한다. 따라서 웹페이지의 컨텐츠에는 아무런 영향도 미치지 않는다.
+
+하지만 메타태그의 정보를 기반으로 Google 등의 검색엔진에서는 크롤러, 검색엔진 봇을 통해 웹페이지를 인덱싱하고, 검색 결과에 노출되는 순위를 결정하기 때문에 SEO에 영향을 크게 미치는 요소이다.
+
+### `meta 태그의 요소에 대해서 아는대로 말해보세요`
+
+`<meta name="속성" content="값">`
+
+위 형식으로 메타태그를 사용하며 속성은 다음과 같은 태그들이 들어갈 수 있다.
+
+#### title
+
+페이지의 제목을 명시한다.
+
+#### charset
+
+페이지에서 사용되는 문자 인코딩을 명시한다.
+
+#### viewport
+
+페이지에서 권장하는 뷰포트 설정을 명시한다.
+
+#### description
+
+페이지에 대한 설명을 명시한다.
+
+#### keywords
+
+페이지에 대한 키워드를 명시한다.
+이 키워드를 통해 해당 웹페이지의 관련 키워드를 나열할 수 있다.
+
+#### author
+
+페이지의 작성자를 명시한다.
+
+#### robots
+
+검색엔진 봇이 페이지를 인덱싱할 수 있도록 허용할지 말지를 명시한다.
+
+#### og?
+
+SNS나 메신저를 통해서 웹페이지의 링크를 공유할 때 페이지의 정보를 명시한다.
+
+슬랙이나 트위터에서 해당 웹페이지의 링크를 공유한다면 콘텐츠 미리보기에 원하는 내용을 표기할 수 있다.
+
+Open Graph Protocol이라는 업계표준을 따라서 정보를 제공하기 때문에 줄여서 og 태그라고 부른다.
+
+<br />
+
+## 웹 표준 및 웹 접근성
+
+### `웹 표준이란?`
+
+**웹 상에서 표준적으로 사용되는 기술 규격**
+
+웹 표준은 웹사이트를 어떠한 운영체제에서나 어떠한 브라우저에서나 동일하게 보여지도록 W3C(World Wide Web Consortium) 기구 표준에 맞추는 것이다.
+
+웹 표준의 최신 버전은 `HTML5`, `CSS3`이다.
+
+### `HTML5에서 추가된 내용이 있나요?`
+
+### `웹 접근성이란?`
+
+### `웹 접근성에 맞는 마크업 **예시 몇가지 말해보시오`
+
+### `시멘틱 태그란 무엇인가 왜 사용하는가`
+
+### `텍스트 관련 태그`
+
+### `SEO란 무엇인가?`
+
+### `Button 태그의 Default type은 무엇인가?`
+
+### `Section 태그와 article 태그의 차이점`
+
+### `크로스 브라우징이란 무엇인가요?`
+
+<br />
+
 ## 리플로우와 리페인트에 대해 설명하시오
 
 브라우저의 작동 방식부터 설명을 하자.
@@ -108,6 +201,7 @@ HTML 파일은 DOM Tree로 변환, CSS 파일은 CSSOM Tree로 변환한다.
 마지막으로 요소에 스타일을 적용하는 Paint 과정을 거친다.
 
 이 때 레이아웃과 페인트 과정을 최초로 그린 다음 레이아웃과 페인트 과정을 다시 그리는 것을 리플로우와 리페인트라고 한다.
+
 
 ### 리플로우
 
@@ -154,26 +248,26 @@ display: none이 적용된 요소는 렌더트리에서 제외된다. 따라서 
 JS에서 DOM 속성을 변경할 때, 여러번 변경하는 것보다 한번에 변경하는 것이 좋다.
 
 ```typescript
-  // BAD
-  const el1 = document.querySelector('.target-first');
-  el1.style.width = '10px';
+// BAD
+const el1 = document.querySelector(".target-first");
+el1.style.width = "10px";
 
-  const el2 = document.querySelector('.target-second');
-  el2.style.width = '10px';
+const el2 = document.querySelector(".target-second");
+el2.style.width = "10px";
 
-  const el3 = document.querySelector('.target-third');
-  el3.style.width = '10px';
+const el3 = document.querySelector(".target-third");
+el3.style.width = "10px";
 
-  // GOOD
+// GOOD
 
-  const el1 = document.querySelector('.target-first');
-  const el2 = document.querySelector('.target-second');
-  const el3 = document.querySelector('.target-third');
+const el1 = document.querySelector(".target-first");
+const el2 = document.querySelector(".target-second");
+const el3 = document.querySelector(".target-third");
 
-  // dom의 스타일 변경 코드를 한 곳으로 모아둠
-  el1.style.width = '10px';
-  el2.style.width = '10px';
-  el3.style.width = '10px';
+// dom의 스타일 변경 코드를 한 곳으로 모아둠
+el1.style.width = "10px";
+el2.style.width = "10px";
+el3.style.width = "10px";
 ```
 
 브라우저의 리플로우 처리방식 때문
