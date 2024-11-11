@@ -189,5 +189,269 @@ DOM은 새로운 요청이 있으면 위와 같은 방식을 거쳐 리랜더링
 
 순회하는 알고리즘은 모든 노드를 순회하면서 변경된 노드를 체크하면 그 컴포넌트를 리렌더링 시키는 형식.
 
+### 리액트의 렌더링에 대해 아나요
+
+브라우저의 렌더리은 HTML과 CSS를 기반으로 웹 페이지에 필요한 UI를 그리는 과정이다. 리액트의 렌더링의 경우 브라우저의 렌더링과 구분 지을 수 있다.
+
+브라우저가 렌더링에 필요한 DOM트리를 만드는 과정으로 브라우저 렌더링보다 먼저 실행된다. 리액트 애필리케이션 트리 안에 있는 모든 컴포넌트들이 현재 자신들이 가지고 있는 props와 state의 값을 기반으로 어떻게 UI를 구성하고 이를 바탕으로 어떤 DOM결과를 브라우저에 제공할 것인지 계산하는 일련의 과정이다.
+
+이 과정은 다음과 같이 이루어진다.
+
+1. 렌더링을 유발하는 단계로 createRoot의 실행, 혹은 state를 업데이트 하면 발생한다.
+2. 렌더링으로 컴포넌트를 호출하는 단계이다. creatRoot로 렌더링이 발생했다면, 루트 컴포넌트를 호출하고 state의 업데이트로 인한 렌더링이라면 해당 state가 속해있는 컴포넌트를 호출한다.
+3. 커밋 단계로 변경사항들을 실제 DOM에 적용하는 작업을 진행한다. 첫 커밋이라면 appendChild를 사용해서 스크린에 있는 모든 노드를 생성한다. 만약 첫 커밋이 아니라면 최소한의 작업을 통해 변경사항만 실제 DOM에 적용한다. 그리고 이 **변경 사항은 렌더링 중에 계산된다.**
+
+> 흔히 알고있는 가상 DOM을 활용한 Reconciliation은 두 번째 단계인 렌더링에서 이루어진다.
+
+#### 리액트의 렌더링은 언제 일어날까?
+
+**최초 렌더링** : 사용자가 처음 어플리케이션에 진입했을 때 보여야할 결과물을 위해 리액트는 최초 렌더링을 수향한다
+**리렌더링** : 리렌더링은 처음 어플리케이션에 진입했을 때 최초 렌더링이 발생한 이후로 발생하는 모든 렌더링을 의미한다.
+
+1. 함수형 컴포넌트의 useState()의 두 번째 배열요소인 setter가 실행되는 경우. state의 변화는 컴포넌트의 상태 변화를 의미한다. 컴포넌트의 상태가 변화할 때 렌더링을 발생한다.
+
+2. props가 변경되는 경우. 부모로 부터 전달 받는 값인 props가 달라지면 이를 사용하는 자식 컴포넌트에서 변경이 필요하므로 리렌더링이 일어난다.
+
+3. 컴포넌트의 Key props가 변경되는 경우: 리액트에서 key는 명시적으로 선언되어 있지 않더라도 모든 컴포넌트에서 사용이 가능한 특수한 props다. 일반적으로 key는 하위 컴포넌트를 선언할 때 사용된다.
+
+#### 가상 DOM VS 실제 DOM
+
+리액트의 렌더링 프로세스는 DOM 결과를 브라우저에게 제공할 것인지 계산하는 과정.
+
+그렇다면 리액트는 어떻게 결과를 계산할까?
+
+실제 DOM을 추상화하여 만들어진 가상 DOM의 변화를 감지하여 변경 결과를 도출한다. 컴포넌트의 상태가 변경되면 리액트는 이 변경을 감지하고 기존 가상 DOM트리와 변경된 가상 DOM트리를 비교한다. 이런 알고리즘을 Reconciliation이라고 하며 가상 DOM의 탐색 성능을 최적화 했다.
+
+Reconciliation은 다음과 같은 특징을 가지고 있다.
+
+- 컴포넌트 유형이 다르면 diff를 진행하지 않고 트리 자체를 새로운 트리로 대체한다.
+- 리스트의 diff는 key를 기준으로 수행된다. 이 때 key는 안정적이고 예측 가능하며 유니크한 값이어야 한다.
+- 배치업데이트(여러 상태 업데이트)를 일괄적으로 처리한다.
+
+#### 리액트가 가상 DOM을 선택한 이유
+
+V8 엔진에서 브라우저의 렌더링 과정은 다음과 같다.
+
+1. HTML 파싱 → DOM 트리
+2. CSS 파싱 → CSSOM 트리
+3. DOM + CSSOM → 렌더 트리
+4. Layout(reflow)
+5. Paint(repaint)
+6. Composite
+
+이 중 브라우저 리소스가 가장 많이 소모되는 부분이 layout과 paint이다. 그리고 이 과정은 Render Tree가 변경될 때 마다 재실행 된다. 즉, Render Tree변경의 최소화가 브라우저 성능을 최적화 한다는 것.
+
+그리고 리액트는 가상 DOM과 재조정을 통해 오로지 변경사항만을 실제 DOM에 적용함으로써 Render Tree변경의 최소화를 실현한다.
+
+- Virtual DOM은 메모리상의 DOM 표현
+- 실제 DOM과의 차이를 계산(diffing)
+- 최소한의 변경사항만 실제 DOM에 적용
+
+그러나 리액트 팀은 가상 DOM과 재조정만으로 해결할 수 없는 문제를 직면했고 이를 해결하기 위해 React 16에서 리액트 파이버를 도입하게 되었다.
+
+이런 문제들을 해결 할 수 있다.
+
+- 렌더링 작업의 우선순위 부여
+- 작업의 중단과 재개 가능
+- 비동기 렌더링 지원
+- 더 나은 에러 처리
+- 서버 사이드 렌더링 개선
+
+> 16이전에는 stack Reconciler, 16이후에는 fiber Reconciler를 사용한다.
+
+#### 파이버를 왜 도입했을까?
+
+```js
+// React 15 이전의 재귀적 처리
+function recursivelyRenderComponents(element) {
+  // 동기적으로 처리되어 중단 불가능
+  processChildren(element.children);
+  return result;
+}
+
+// Fiber 구조
+type Fiber = {
+  // 작업 유형
+  type: any,
+
+  // 링크드 리스트 구조
+  child: Fiber | null,
+  sibling: Fiber | null,
+  return: Fiber | null,
+
+  // 작업 상태
+  pendingProps: any,
+  memoizedProps: any,
+  updateQueue: UpdateQueue<any> | null,
+
+  // 작업 관리
+  alternate: Fiber | null,
+  flags: Flags,
+  subtreeFlags: Flags,
+};
+```
+
+React 16 이전의 Stack Reonciler의 경우 동기적, 스택으로 작업을 처리했기 때문에 한 번 작업을 시작하면 끝날때 까지 멈추지 않았다. 이 때 메인쓰레드에 과부하가 걸릴정도로 고연산 작업을 처리한다면 유저 경험ㅇ르 심각하게 저해시킬 정도의 렌더링 문제가 발생할 수 있다.
+
+이를 해결하기 위해 리액트 파이버는
+
+- 연산을 멈추고 다시 수행
+- 각기역할마다 다른 우선순위를 부여
+- 이전에 완료된 연산을 재사용 할 수 있는 기능
+- 필요가 없어진 연산을 중간에 취소하는 기능
+
+이런 기능들을 구현했다.
+
+Fiber Reconciler는 더이상 재조정을 렌더링과 동시에 진행하지 않음으로써 리액트는 업데이트될 변경사항에 우선순위를 부여할 수 있게 되었다. 이를 증분 렌더링이라고 한다.
+
+증분렌더링은 렌더링 작업을 점진적으로 처리할 수 있는 더 작고 우선순위가 지정된 청크(객체)로 가상 DOM을 업데이트하는 작업을 분할하는 방식으로 작동하는데, 이를 위해서 재조정과 렌더링이 분리되었다. 그리고 이 분리된 방식을 우리는 위에서 설명한 렌더링 단계와 커밋 단계로 이미 알고있다.
+
+그렇다면 이 두 단계르 다시 상세히 알아보자
+
+```
+Render Phase (중단 가능)
+↓
+Commit Phase 준비
+↓
+Commit Phase (중단 불가)
+↓
+브라우저 렌더링
+```
+
+- 렌더링 단계 1: 리액트는 UI에 나타나야할 모든 변경사항들을 파이버 트리를 구성하여 저장한다. 이 때 리액트는 언제든 작업을 중지할 수 있으며 다른 단계로 넘어갈 수 있다.
+- 렌더링 단계 2: 변경사항 리스트가 완성됐으면 리액트는 다음 단계에서 실행되어야할 변경사항을 예약한다.
+- 커밋 단계 1: 리액트는 렌더링 단계 2에서 예약한 변경사항 중 특정사항만 렌더링 할 수 있게 지정할 수 있다.
+- 커밋 단계 2: 커밋되면 리액트는 모든 변경사항을 렌더링 하도록 브라우저에게 알린다.
+
+#### 리액트 파이버의 작동 원리
+
+파이버는 자바 스크립트 객체다. 파이버를 노드로 갖는 트리를 파이버 트리라고 하며 잉것을 우리는 웹 환경에서 가상 DOM이라고 부른다. 다만 가상 DOM이란 용어는 웹 어플리케이션에서만 통용되는 용어로 파이버와 가상 DOM은 동일한 개념이 아니다.
+
+파이버 노드의 속성은 다음과 같다.
+```js
+type Fiber = {
+  // 요소의 타입 (함수 컴포넌트, 클래스 컴포넌트, 호스트 컴포넌트 등)
+  type: any,
+  
+  // 고유 식별자
+  key: null | string,
+  
+  // 요소가 속한 컨텍스트
+  elementType: any,
+  
+  // 인스턴스와 관련된 정보
+  stateNode: any,  // DOM 노드나 컴포넌트 인스턴스 참조
+  // 첫 번째 자식 노드
+  child: Fiber | null,
+  
+  // 다음 형제 노드
+  sibling: Fiber | null,
+  
+  // 부모 노드
+  return: Fiber | null,
+  
+  // 첫 번째와 마지막 자식에 대한 빠른 접근
+  firstEffect: Fiber | null,
+  lastEffect: Fiber | null,
+
+  // 새로 들어오는 props
+  pendingProps: any,
+  
+  // 이전에 렌더링된 props
+  memoizedProps: any,
+  
+  // 컴포넌트의 현재 상태
+  memoizedState: any,
+  
+  // 대기 중인 업데이트 큐
+  updateQueue: UpdateQueue<any> | null,
+
+   // 작업 중인 fiber의 대체 버전 (double buffering)
+  alternate: Fiber | null,
+  
+  // 수행해야 할 사이드 이펙트 표시
+  flags: Flags,
+  
+  // 하위 트리의 누적된 사이드 이펙트
+  subtreeFlags: Flags,
+  
+  // 작업 우선순위
+  lanes: Lanes,
+  childLanes: Lanes,
+   // 훅 리스트의 첫 번째 훅
+  firstContextDependency: ContextDependency<mixed> | null,
+  
+  // 의존성 목록
+  dependencies: Dependencies | null,
+  
+  // 모드 플래그 (Strict Mode 등)
+  mode: TypeOfMode,
+
+  // 디버깅을 위한 태그 (함수/클래스 컴포넌트 구분 등)
+  tag: WorkTag,
+  
+  // 개발 모드에서의 디버깅 정보
+  _debugID: number,
+  _debugSource: Source | null,
+  _debugOwner: Fiber | null,
+  _debugIsCurrentlyTiming: boolean,
+}
+```
+
+파이버 트리는 Left-child right-sibling 형식으로 구성되어 있다.
+
+해당 트리를 통해 메모리 효율성, 작업 중단과 재개, 순회 효율성을 높인다.
+
+#### 리액트 파이버는 두개의 트리를 가지고 있다.
+
+파이버 트리는 현재 모습을 담은 Fiber Tree와 작업 중인 상태를 나타내는 workInProgress Tree로 이루어져 있다.
+
+1. 현재 파이버 트리(current Fiber Tree)
+
+- 이 트리는 현재 화면에 렌더링 되어있는 UI의 상태를 나타낸다.
+- 현재 파이버 트리의 노드들은 실제 DOM 노드와 1:1 대응 관계를 가진다.
+- 즉, 현재 파이버 트리는 실제 DOM의 현재 모습을 가상적으로 표현한다.
+
+2. 작업중인 파이버 트리(workInProgress Fiber Tree)
+
+- 이 트리는 다음 렌더링 작업시 업데이트될 UI상태를 계산하기위해 사용된다.
+- 작업 중인 트리는 Virtual DOM의 역할을 한다. 여기서 새로운 Virtual DOM 트리가 생성되고 계산된다.
+- 작업 중인 트리에서 계산된 변경 사항은 실제 DOM에 반영되기 전에 reconciliation 과정을 거친다.
+
+3. Reconciliation 과정
+
+- React는 현재 파이버 트리와 작업 중인 파이버 트리를 비교하여 변경된 부분을 찾아낸다.
+- 이때 변경된 부분만 실제 DOM에 반영되며, 불필요한 DOM 조작을 최소화한다.
+- Reconciliation 과정이 완료되면 작업 중인 파이버 트리가 새로운 현재 파이버 트리가 된다.
+
+4. DOM 업데이트
+
+- Reconciliation 단계에서 발견된 변경 사항이 실제 DOM에 반영된다.
+- React는 가능한 한 최소한의 DOM 변경 작업을 수행하여 성능을 최적화한다.
+- 이 과정에서 실제 DOM과 현재 파이버 트리가 동기화된다.
+
+리액트는 파이버 트리를 통해 렌더링 작업을 처리하는데, 작업이 끝나면 단순히 포인터만 변경해 workInProgress Tree를 현재 트리로 바꿔버린다. 이러한 기술을 더블 버퍼링이라고 한다.
+
+더블 버퍼링은 전체 과정에 걸쳐 수행된다.
+
+- 렌더 단계: workInProgress 트리 구성
+- 커밋 단계: current와 workInProgress 트리 교체
+
+1. 업데이트 발생
+2. 렌더 단계 (Render Phase)
+   - current 트리 기반으로 workInProgress 트리 생성
+   - 비동기적으로 작업 수행 가능
+   - 작업 중단/재개 가능
+
+3. 커밋 단계 (Commit Phase)
+   - workInProgress 트리를 current 트리로 교체
+   - DOM 업데이트
+   - 동기적으로 수행 (중단 불가)
+
+4. 완료
+   - 새로운 current 트리 기준으로 다음 업데이트 대기
 
 
+
+
+> 출처 : https://medium.com/@sht02048/%EC%83%9D%EA%B0%81%EB%B3%B4%EB%8B%A4-%EB%8D%94-%EC%84%AC%EC%84%B8%ED%95%9C-%EB%A6%AC%EC%95%A1%ED%8A%B8-%EB%A0%8C%EB%8D%94%EB%A7%81-%EA%B3%BC%EC%A0%95-feat-%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%8C%8C%EC%9D%B4%EB%B2%84-44075084381a
