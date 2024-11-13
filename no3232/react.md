@@ -451,7 +451,6 @@ type Fiber = {
 4. 완료
    - 새로운 current 트리 기준으로 다음 업데이트 대기
 
-
-
-
 > 출처 : https://medium.com/@sht02048/%EC%83%9D%EA%B0%81%EB%B3%B4%EB%8B%A4-%EB%8D%94-%EC%84%AC%EC%84%B8%ED%95%9C-%EB%A6%AC%EC%95%A1%ED%8A%B8-%EB%A0%8C%EB%8D%94%EB%A7%81-%EA%B3%BC%EC%A0%95-feat-%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%8C%8C%EC%9D%B4%EB%B2%84-44075084381a
+
+
